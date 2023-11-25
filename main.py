@@ -1,7 +1,8 @@
 from telegram import Update, InputMediaPhoto
-from telegram.ext import ContextTypes, Application, MessageHandler, filters, CommandHandler, CallbackContext, Updater
+from telegram.ext import ContextTypes, Application, MessageHandler, filters, CommandHandler, CallbackContext, Updater, CallbackQueryHandler
 import os
 from charts.charts import *
+import random
 
 TOKEN = '6958326278:AAFrhzqsABANo7cKyMSHwGz6UHtJHGopyxI'
 BOT_USERNAME = '@MqttMonitorBot'
@@ -9,6 +10,7 @@ CHAT_ID = '824304677'
 PATH = 'charts'
 TIMER = 10
 END_JSON = 'data.json'
+keyboard = [['ES', 'EN']]
 
 
 async def send_images(context: CallbackContext):
@@ -36,13 +38,22 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     with open(f'{PATH}/{END_JSON}', 'r') as file:
-        # Load the file contents into a string
         json_string = file.read()
 
     last_record = json_string.split('{')[-1][:-2]
     temp = last_record.split(',')[0].split(':')[1]
     co2 = last_record.split(',')[1].split(':')[1]
     message = f'Температура: {temp}\nCO2: {co2}'
+
+    with open(f'{PATH}/{END_JSON}', 'r') as file:
+        data = json.load(file)
+
+    new_entry = {"temperature": float(temp) + round(random.uniform(1, 2.5)), "CO2": int(co2) + random.randint(4, 12)}
+    data.append(new_entry)
+
+    with open(f'{PATH}/{END_JSON}', 'w') as file:
+        json.dump(data, file)
+
     await update.message.reply_text(message)
 
 #
